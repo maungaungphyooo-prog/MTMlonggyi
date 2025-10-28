@@ -5,10 +5,517 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MTM အထည်စက်</title>
   <style>
-    :root{--accent:#e53935;--bg:#fafafa;--card:#fff}
-    body{margin:0;font-family:'Noto Sans Myanmar',system-ui;background:var(--bg);color:#222}
-    header{background:white;padding:10px;box-shadow:0 1px 4px rgba(0,0,0,.1);text-align:center;position:sticky;top:0;z-index:10}
-    h2{margin:5px 0}
-    /* Button styles */
-    .btn{background:var(--accent);color
+    /* Global Styles & Variables */
+    :root{
+        --accent: #931d20; /* Deep Maroon Red for Branding */
+        --accent-hover: #b92b27; 
+        --bg: #f5f5f5; /* Light Gray Background */
+        --card: #ffffff;
+        --shadow: 0 4px 12px rgba(0,0,0,0.1);
+        --font-color: #333;
+    }
+    body{
+        margin:0;
+        font-family:'Noto Sans Myanmar', system-ui, sans-serif;
+        background:var(--bg);
+        color:var(--font-color);
+        line-height:1.6;
+    }
+    
+    /* Header (Sticky and Modern) */
+    header{
+        background:var(--card);
+        padding:15px 10px;
+        box-shadow:var(--shadow);
+        text-align:center;
+        position:sticky;
+        top:0;
+        z-index:10;
+        border-bottom: 2px solid var(--accent);
+    }
+    h2{margin:0;font-size:24px;color:var(--accent);font-weight:700;}
+    header div{font-size:14px;color:#666;}
+    
+    /* Button styles (With modern effects) */
+    .btn{
+        background:var(--accent);
+        color:white;
+        padding:8px 16px;
+        border:none;
+        border-radius:25px; /* Pill shape */
+        cursor:pointer; 
+        transition: all 0.2s ease-in-out;
+        font-weight: bold;
+        text-transform: uppercase;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .btn:hover:not(:disabled){
+        background:var(--accent-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+    .btn:active:not(:disabled) {transform: translateY(1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2);}
+    .btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+    }
+
+    .btn.ghost{
+        background:transparent;
+        color:var(--accent);
+        border:2px solid var(--accent);
+        box-shadow: none;
+    }
+    .btn.ghost:hover{
+        background: rgba(147, 29, 32, 0.1);
+        transform: translateY(-2px);
+    }
+    .btn.delete{background:#dc3545;}
+    .btn-row{display:flex; gap: 8px; margin-top: 15px; justify-content: center;}
+    
+    /* Layout */
+    .container{max-width:900px;margin:auto;padding:15px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:15px}
+    
+    /* Product Item Card */
+    .item{
+        background:var(--card);
+        border-radius:12px;
+        box-shadow:0 2px 8px rgba(0,0,0,.08);
+        overflow:hidden;
+        cursor:pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .item:hover{
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,.15);
+    }
+    .item img{width:100%;height:150px;object-fit:cover}
+    .meta{padding:10px;text-align: center;}
+    .meta strong{display:block;font-size:15px; margin-bottom: 4px; font-weight: 500;}
+    .meta .price{color:var(--accent);font-weight:bold;font-size:16px;}
+    
+    /* Section Cards */
+    section.card{
+        background:var(--card);
+        padding:15px;
+        margin-bottom:20px;
+        border-radius:12px;
+        box-shadow:0 1px 3px rgba(0,0,0,.05);
+        border-left: 5px solid var(--accent); /* Left border accent */
+    }
+    section.card h3{
+        margin-top: 0;
+        color: var(--accent);
+        border-bottom: 1px solid #eee;
+        padding-bottom: 8px;
+        margin-bottom: 15px;
+        font-weight: 600;
+        font-size: 20px;
+    }
+
+    /* Modal styles */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;justify-content:center;align-items:center;z-index:100;backdrop-filter: blur(5px);}
+    .modal-content{background:white;border-radius:15px;max-width:90%;overflow:hidden; margin: 20px; box-shadow: var(--shadow); width: 100%; max-width: 400px;} /* Custom width for modal */
+    .item-detail-content{max-width: 900px;}
+
+    /* Image in Detail Modal */
+    .item-detail-content img{width:100%;height:auto; max-height: 400px; object-fit: cover;}
+    .modal-body{padding:20px;text-align:center}
+    .modal-body #modalName{font-size: 20px; font-weight: 600; margin-bottom: 5px;}
+    .modal-body .price{color:var(--accent);font-weight:bold;font-size: 22px; margin-top: 5px;}
+    .close{position:absolute;top:15px;right:25px;color:white;font-size:30px;cursor:pointer;text-shadow: 0 0 5px rgba(0,0,0,0.8);}
+
+    /* Footer */
+    footer{text-align:center;padding:20px;color:#888;font-size:14px;border-top: 1px solid #ddd; margin-top: 20px;}
+
+    /* Admin Panel Input Styles */
+    #adminPanel label {display: block; margin-bottom: 4px; font-weight: 500;}
+    #adminPanel input:not([type="file"]), #adminPanel select {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-sizing: border-box; 
+        transition: border-color 0.2s;
+    }
+    #adminPanel input:focus, #adminPanel select:focus {
+        border-color: var(--accent);
+        outline: none;
+    }
+    #adminPanel input[type="file"] {
+        margin-bottom: 15px;
+    }
+
+    /* Custom Alert/Confirm/Password Modal Style */
+    #alertModal .modal-content, #confirmModal .modal-content, #passwordModal .modal-content {
+        max-width: 300px;
+        text-align: center;
+        padding: 20px;
+        overflow: visible; 
+    }
+    #alertModal button, #confirmModal button, #passwordModal button {
+        width: 100%;
+        padding: 10px;
+        font-weight: bold;
+    }
+    #confirmModal .btn-row button {
+        width: 50%;
+    }
+    #alertMessage, #confirmMessage, #passwordMessage {
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 15px;
+    }
+    #passwordInput {
+        margin-top: 10px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+        .grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap: 10px;}
+        header h2 {font-size: 22px;}
+        .container {padding: 10px;}
+        .item img{height: 120px;}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>မင်းသန့်မောင် အထည်စက်</h2>
+    <div>ပင်ရင်း။ ၈ လမ်း၊ တံတားဦးရပ်ကွက်၊ ဝမ်းတွင်းမြို့</div>
+    <div>ဖုန်း။ 09697680226 (Kpay / Wave Pay / Viber)</div>
+    <button id="adminToggle" class="btn ghost" style="margin-top:10px">Admin Mode</button>
+  </header>
+
+  <div class="container">
+    <section class="card">
+      <h3># ပုဆိုး</h3>
+      <div id="puso" class="grid"></div>
+    </section>
+
+    <section class="card">
+      <h3># လုံခြည်</h3>
+      <div id="lon" class="grid"></div>
+    </section>
+
+    <section class="card">
+      <h3># အခြား</h3>
+      <div id="other" class="grid"></div>
+    </section>
+
+    <section id="adminPanel" class="card" style="display:none">
+      <h3>Admin - ပစ္စည်းတင်ရန်</h3>
+      <label>ပုံရွေးပါ</label>
+      <input id="img" type="file" accept="image/*" multiple><br>
+      <label>အမျိုးအစား</label>
+      <select id="cat">
+        <option value="puso">ပုဆိုး</option>
+        <option value="lon">လုံခြည်</option>
+        <option value="other">အခြား</option>
+      </select>
+      <input id="name" placeholder="အမည်"><br>
+      <input id="price" type="number" placeholder="စျေး (ဥပမာ 11000)"><br>
+      <button id="save" class="btn" style="margin-top:6px">ပစ္စည်းထည့်မည်</button>
+    </section>
+  </div>
+
+  <!-- Item Detail Modal -->
+  <div class="modal" id="modal">
+    <div class="close" onclick="closeModal()">&times;</div>
+    <div class="modal-content item-detail-content">
+      <img id="modalImg">
+      <div class="modal-body">
+        <div id="modalName"></div>
+        <div id="modalPrice" class="price"></div>
+        <div class="btn-row">
+            <button id="callBtn" class="btn">ဆက်သွယ်မှာယူရန်</button>
+            <!-- Delete Button (Admin Mode မှသာ တွေ့ရမည်) -->
+            <button id="deleteBtn" class="btn delete" style="display:none;">ဖျက်ရန်</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Modal (alert() ကို အစားထိုး) -->
+  <div class="modal" id="alertModal">
+    <div class="modal-content">
+        <p id="alertMessage"></p>
+        <button class="btn" onclick="document.getElementById('alertModal').style.display='none'">OK</button>
+    </div>
+  </div>
+
+  <!-- Custom Confirm Modal (confirm() ကို အစားထိုး) -->
+  <div class="modal" id="confirmModal">
+    <div class="modal-content">
+        <p id="confirmMessage"></p>
+        <div class="btn-row">
+            <button id="confirmYesBtn" class="btn delete">ဟုတ်ကဲ့</button>
+            <button id="confirmNoBtn" class="btn ghost">မဖျက်တော့ပါ</button>
+        </div>
+    </div>
+  </div>
+
+  <!-- Custom Password Modal (prompt() ကို အစားထိုး) -->
+  <div class="modal" id="passwordModal">
+    <div class="modal-content">
+        <p id="passwordMessage">Admin Password (mtmadmin)</p>
+        <input id="passwordInput" type="password" placeholder="Password" style="margin-bottom: 10px;">
+        <div class="btn-row" style="margin-top: 0;">
+            <button id="passwordOkBtn" class="btn">OK</button>
+            <button id="passwordCancelBtn" class="btn ghost">Cancel</button>
+        </div>
+    </div>
+  </div>
+
+  <footer>© Minthant Maung အထည်စက်</footer>
+
+<!-- Firebase Libraries and Main Script -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script>
+// (၀) Custom UI Functions (alert/confirm/prompt ကို အစားထိုးခြင်း)
+let globalResolve;
+
+function customAlert(message) {
+    document.getElementById('alertMessage').textContent = message;
+    document.getElementById('alertModal').style.display = 'flex';
+}
+
+function customConfirm(message) {
+    return new Promise(resolve => {
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('confirmModal').style.display = 'flex';
+        
+        const yesBtn = document.getElementById('confirmYesBtn');
+        const noBtn = document.getElementById('confirmNoBtn');
+        
+        // Remove old listeners
+        yesBtn.onclick = noBtn.onclick = null;
+        
+        yesBtn.onclick = () => {
+            document.getElementById('confirmModal').style.display = 'none';
+            resolve(true);
+        };
+        noBtn.onclick = () => {
+            document.getElementById('confirmModal').style.display = 'none';
+            resolve(false);
+        };
+    });
+}
+
+function customPrompt(message) {
+    return new Promise(resolve => {
+        document.getElementById('passwordMessage').textContent = message;
+        document.getElementById('passwordModal').style.display = 'flex';
+        const input = document.getElementById('passwordInput');
+        const okBtn = document.getElementById('passwordOkBtn');
+        const cancelBtn = document.getElementById('passwordCancelBtn');
+        
+        input.value = ''; // Clear previous input
+        input.focus();
+        
+        // Remove old listeners
+        okBtn.onclick = cancelBtn.onclick = null;
+        
+        okBtn.onclick = () => {
+            document.getElementById('passwordModal').style.display = 'none';
+            resolve(input.value);
+        };
+        cancelBtn.onclick = () => {
+            document.getElementById('passwordModal').style.display = 'none';
+            resolve(null); // Resolve with null if cancelled
+        };
+        
+        // Allow pressing Enter key to submit
+        input.onkeydown = (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                okBtn.click();
+            }
+        };
+    });
+}
+
+
+// (၁) Firebase Configuration (သင့်ရဲ့ API Key များ)
+// NOTE: These are the user's provided Firebase config details.
+const firebaseConfig = {
+  apiKey: "AIzaSyChOPcuCk-Msw2IMZ9lymRWUhI52Zgx7WY",
+  authDomain: "mtm-cloth-shop.firebaseapp.com",
+  databaseURL: "https://mtm-cloth-shop-default-rtdb.firebaseio.com",
+  projectId: "mtm-cloth-shop",
+  storageBucket: "mtm-cloth-shop.firebasestorage.app",
+  messagingSenderId: "638731950031",
+  appId: "1:638731950031:web:9e3f0cc36bcd26771de4ba",
+  measurementId: "G-1TZZT9ZJ1N"
+};
+
+// Firebase ကို စတင် အသုံးပြုခြင်း
+firebase.initializeApp(firebaseConfig);
+const dbRef = firebase.database().ref('items'); 
+const PW = 'mtmadmin'; // Admin Password
+
+// (၂) Data ကို ယူပြီး ပြသခြင်း
+function render(items) {
+    if (!items) items = []; 
+    ['puso', 'lon', 'other'].forEach(id => document.getElementById(id).innerHTML = '');
+    items.sort((a, b) => b.id - a.id).forEach(it => { 
+        const el = document.createElement('div');
+        el.className = 'item';
+        // ဈေးနှုန်းကို 3,000 Ks ပုံစံဖြင့် ပြသခြင်း
+        const priceDisplay = (typeof it.price === 'number') ? it.price.toLocaleString() : it.price;
+        el.innerHTML = `<img src="${it.img}" alt="${it.name}"><div class='meta'><strong>${it.name}</strong><div class='price'>${priceDisplay} Ks</div></div>`;
+        el.onclick = () => openModal(it);
+        document.getElementById(it.cat).appendChild(el);
+    });
+}
+
+// Database ကနေ အချက်အလက်ကို အချိန်နဲ့တပြေးညီ စောင့်ကြည့်ခြင်း 
+dbRef.on('value', (snapshot) => {
+    const data = snapshot.val();
+    let finalItems = [];
+    if (data) {
+        Object.keys(data).forEach(key => {
+            finalItems.push({...data[key], dbKey: key}); 
+        });
+    }
+    render(finalItems);
+}, (error) => {
+    console.error("Firebase Read Error: ", error);
+    customAlert("အချက်အလက်များကို ဆွဲယူရာတွင် အမှားဖြစ်ပွားပါသည်။");
+});
+
+
+// (၃) Item Detail Modal Functions (Delete Button ထည့်သွင်းထားသည်)
+const modal=document.getElementById('modal');
+function openModal(it){
+ modal.style.display='flex';
+ document.getElementById('modalImg').src=it.img;
+ document.getElementById('modalName').textContent=it.name;
+ 
+ // ဈေးနှုန်းကို 3,000 Ks ပုံစံဖြင့် ပြသခြင်း
+ const priceDisplay = (typeof it.price === 'number') ? it.price.toLocaleString() : it.price;
+ document.getElementById('modalPrice').textContent=priceDisplay + ' Ks';
+ 
+ document.getElementById('callBtn').onclick=()=>window.location.href='tel:09697680226';
+
+ // Admin Mode ဝင်ထားရင် Delete Button ကိုပြသည်
+ const deleteBtn = document.getElementById('deleteBtn');
+ if(sessionStorage.getItem('is_admin')==='1'){
+    deleteBtn.style.display = 'block';
+    deleteBtn.onclick = async () => {
+        const confirmed = await customConfirm(`'${it.name}' ကို ဖျက်မှာ သေချာပါသလား?`);
+        if (confirmed) {
+            deleteItem(it.dbKey);
+        }
+        closeModal();
+    };
+ } else {
+    deleteBtn.style.display = 'none'; // User mode မှာ ဖျက်ရန် ခလုတ်ကို ဖျောက်ထားသည်
+ }
+}
+function closeModal(){modal.style.display='none';}
+
+
+// (၄) Delete Item Function
+function deleteItem(dbKey) {
+    if (!dbKey) {
+        customAlert("ဖျက်ရန် Key မရှိပါ။");
+        return;
+    }
+    firebase.database().ref(`items/${dbKey}`).remove()
+        .then(() => {
+            customAlert("ပစ္စည်း ဖျက်ပြီးပါပြီ။");
+        })
+        .catch(error => {
+            console.error("Firebase Delete Error: ", error);
+            customAlert("ဖျက်ရာတွင် အမှားဖြစ်: " + error.message);
+        });
+}
+
+
+// (၅) Admin Toggle Functions 
+document.getElementById('adminToggle').onclick=async ()=>{
+ if(sessionStorage.getItem('is_admin')==='1'){
+    sessionStorage.removeItem('is_admin');
+    exit();
+ } else {
+     const p = await customPrompt('Admin Password (mtmadmin)');
+     if(p && p === PW){
+        sessionStorage.setItem('is_admin','1');
+        enter();
+        customAlert('Admin Mode သို့ ဝင်ရောက်ပြီးပါပြီ။');
+     } else if (p !== null) { // p !== null means user did not cancel
+        customAlert('Password မမှန်ပါ');
+     }
+    }
+};
+function enter(){document.getElementById('adminPanel').style.display='block';document.getElementById('adminToggle').textContent='Exit Admin';}
+function exit(){document.getElementById('adminPanel').style.display='none';document.getElementById('adminToggle').textContent='Admin Mode';}
+
+
+// (၆) Data ကို Database မှာ သိမ်းဆည်းခြင်း (Promise.all ဖြင့် ပြန်လည်ပြင်ဆင်ခြင်း)
+document.getElementById('save').onclick = () => {
+    const saveBtn = document.getElementById('save');
+    const fs = document.getElementById('img').files;
+    const cat = document.getElementById('cat').value;
+    const name = document.getElementById('name').value.trim();
+    const priceInput = document.getElementById('price').value.trim();
+    const price = Number(priceInput);
+
+    // 1. Input Validation
+    if (name === "") return customAlert('အမည် ထည့်သွင်းရန် လိုအပ်ပါသည်');
+    if (priceInput === "" || isNaN(price) || price <= 0) return customAlert('ဈေးနှုန်းကို မှန်ကန်စွာ (ဂဏန်းဖြင့်) ထည့်သွင်းပါ။');
+    if (!fs.length) return customAlert('ပုံရွေးပါ');
+
+    // 2. Set Loading State
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'တင်နေသည်...'; 
+
+    const fileUploadPromises = [...fs].map(f => {
+        return new Promise((resolve, reject) => {
+            const r = new FileReader();
+            r.onload = e => {
+                const newItem = { id: Date.now(), cat, name, price, img: e.target.result };
+                
+                dbRef.push(newItem)
+                    .then(() => resolve())
+                    .catch(error => reject(`Firebase သိမ်းဆည်းရာတွင် အမှားဖြစ်: ${f.name} (${error.message})`));
+            };
+            r.onerror = () => reject(`ဖိုင်ဖတ်ရာတွင် အမှားဖြစ်: ${f.name}`);
+            r.readAsDataURL(f);
+        });
+    });
+
+    // 3. Wait for all uploads to complete
+    Promise.all(fileUploadPromises)
+        .then(() => {
+            customAlert(`${fs.length} ခုသော ပစ္စည်းများအားလုံး ထည့်သွင်းပြီးပါပြီ။`);
+            // Clear inputs
+            document.getElementById('img').value = '';
+            document.getElementById('name').value = '';
+            document.getElementById('price').value = '';
+        })
+        .catch(error => {
+            console.error("Upload failed:", error);
+            customAlert(error); // error will be the detailed rejection message
+        })
+        .finally(() => {
+            // 4. Reset Button State
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'ပစ္စည်းထည့်မည်';
+        });
+};
+
+
+// Page စတင် load သောအခါ
+if(sessionStorage.getItem('is_admin')==='1')enter();
+
+</script>
+</body>
+</html>
 
